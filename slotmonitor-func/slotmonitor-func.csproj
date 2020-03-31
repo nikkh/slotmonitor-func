@@ -9,12 +9,13 @@
     <None Remove="settings.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="local.settings.json">
+    <Content Include="local.settings.json" Condition="Exists('local.settings.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </Content>
     <Content Include="settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
