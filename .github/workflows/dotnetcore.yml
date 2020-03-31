@@ -23,8 +23,8 @@ jobs:
     - name: 'Run dotnet build'
       shell: bash
       run: |
-        pushd slotmonitor-func/slotmonitor-func
-        dotnet build --configuration Release --output ./output
+        pushd slotmonitor-func
+        dotnet build --configuration Debug --output ./output
         popd 
         
     - name: Login to Azure
