@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 using MimeKit;
 using Newtonsoft.Json.Linq;
 using slotmonitor_func.Contexts;
@@ -74,6 +75,7 @@ namespace slotmonitor_func
                 await Notify(lastSlotPreviously, lastSlotCurrently);
             }
             await SetPreviousSlotDate(lastSlotCurrently);
+            await SaveSlotDateUpdateHistory(lastSlotCurrently);
             return;
         }
 
@@ -150,49 +152,50 @@ namespace slotmonitor_func
             {
                 throw new Exception($"Error processing blob storage {e.Message}", e);
             }
-
             string responseBody = null;
-
-            var url = $"https://groceries.asda.com/api/v3/slot/view";
-            HttpResponseMessage response;
-            var clientHandler = new HttpClientHandler
+            try
             {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            };
-
-            using (var client = new HttpClient(clientHandler))
-            {
-                client.DefaultRequestHeaders.Clear();
-                var data = new StringContent(reqbodyBlobContents, Encoding.UTF8, "application/json");
-
-                foreach (var line in reqhdrBlobContents)
+                
+                var url = $"https://groceries.asda.com/api/v3/slot/view";
+                HttpResponseMessage response;
+                var clientHandler = new HttpClientHandler
                 {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                };
 
-                    var header = line.Split(':');
-                    var name = header[0].Trim();
-                    var value = header[1].Trim();
-
-
-                    if (!name.ToLower().Contains("content-"))
+                using (var client = new HttpClient(clientHandler))
+                {
+                    client.DefaultRequestHeaders.Clear();
+                    var data = new StringContent(reqbodyBlobContents, Encoding.UTF8, "application/json");
+                    foreach (var line in reqhdrBlobContents)
                     {
-                        client.DefaultRequestHeaders.Add(name, value);
+                        var header = line.Split(':');
+                        var name = header[0].Trim();
+                        var value = header[1].Trim();
+                        if (!name.ToLower().Contains("content-"))
+                        {
+                            client.DefaultRequestHeaders.Add(name, value);
+                        }
+                    }
+                    data.Headers.ContentLength = reqbodyBlobContents.Length;
+                    data.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    response = await client.PostAsync(url, data);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        responseBody = await response.Content.ReadAsStringAsync();
+
+                    }
+                    else
+                    {
+                        throw new Exception($"That didnt work.  Calling slots api {url} Response:{response.StatusCode.ToString()}");
                     }
                 }
-                data.Headers.ContentLength = reqbodyBlobContents.Length;
-                data.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-                response = await client.PostAsync(url, data);
-                if (response.IsSuccessStatusCode)
-                {
-                    responseBody = await response.Content.ReadAsStringAsync();
-
-                }
-                else
-                {
-                    throw new Exception($"That didnt work.  Calling slots api {url} Response:{response.StatusCode.ToString()}");
-                }
-                return responseBody;
             }
+            catch (Exception e)
+            {
+                throw new Exception($"Error calling grocery service {e.Message}", e);
+            }
+            return responseBody;
         }
         private static List<DeliverySlot> ParseSlots(string jsonToParse)
         {
@@ -332,6 +335,31 @@ namespace slotmonitor_func
                 await client.DisconnectAsync(true);
             }
         }
+        private async Task SaveSlotDateUpdateHistory(DateTime latestSlotDate)
+        {
+            CloudBlobClient blobClient;
+            CloudBlobContainer inboundContainer;
 
+            try
+            {
+                var storageAccount = CloudStorageAccount.Parse(_storageConnectionString);
+                blobClient = storageAccount.CreateCloudBlobClient();
+                inboundContainer = blobClient.GetContainerReference(_monitoringContext.MonitoringContainerName);
+                var historyBlob = inboundContainer.GetAppendBlobReference("slotDateHistory.txt");
+                try
+                {
+                    await historyBlob.CreateOrReplaceAsync(AccessCondition.GenerateIfNotExistsCondition(), new BlobRequestOptions() { RetryPolicy = new LinearRetry(TimeSpan.FromSeconds(1), 10) }, null);
+                }
+                catch (Exception) 
+                {
+                    ;
+                }
+                await historyBlob.AppendTextAsync($"Date={DateTime.Now.ToLongDateString()}, Time={DateTime.Now.ToLongTimeString()}, Date of Latest Slot={latestSlotDate.ToString("o")}");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Exception loadeding last slot date from storage {e.Message}");
+            }
+        }
     }
 }
