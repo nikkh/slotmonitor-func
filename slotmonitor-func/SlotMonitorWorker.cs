@@ -358,7 +358,7 @@ namespace slotmonitor_func
             }
             catch (Exception e)
             {
-                throw new Exception($"Exception loadeding last slot date from storage {e.Message}");
+                throw new Exception($"Exception saving slot date history to storage {e.Message}");
             }
         }
     }
