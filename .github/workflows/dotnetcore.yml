@@ -1,7 +1,7 @@
 on:
   push:
     paths:
-    - global/**
+    - slotmonitor-func/**
 
 name: Deploy Slot Monitor
 env:
