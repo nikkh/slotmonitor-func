@@ -104,7 +104,7 @@ namespace slotmonitor_func
                 }
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return DateTime.MinValue;
             }
