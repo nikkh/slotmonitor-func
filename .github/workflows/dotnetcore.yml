@@ -37,4 +37,4 @@ jobs:
       id: fa
       with:
         app-name: ${{env.APP_ALIAS}}-func
-        package: 'slotmonitor-func/slotmonitor-func/output'
+        package: 'slotmonitor-func/output'
