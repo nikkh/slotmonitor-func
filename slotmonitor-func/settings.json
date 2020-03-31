@@ -1,5 +1,5 @@
 {
-  "TrainingContext": {
+  "MonitoringContext": {
     "MonitoringContainerName": "slot-monitor-files",
     "RequestHeaderFileName": "reqhdr.txt",
     "RequestBodyFileName": "reqbdy.json",

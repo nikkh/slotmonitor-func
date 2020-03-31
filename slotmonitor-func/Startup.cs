@@ -1,11 +1,9 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using System;
+using slotmonitor_func.Contexts;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using slotmonitor_func.Contexts;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
+[assembly: FunctionsStartup(typeof(slotmonitor_func.Startup))]
 namespace slotmonitor_func
 {
     public class Startup : FunctionsStartup
