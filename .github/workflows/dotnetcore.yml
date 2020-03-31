@@ -2,7 +2,7 @@ on:
   push:
     paths:
     - global/**
-      - 
+
 name: Deploy Slot Monitor
 env:
    APP_ALIAS: slotmonitor
