@@ -43,7 +43,7 @@ namespace slotmonitor_func
         {
             try
             {
-                log.LogInformation($"{ec.FunctionName} (timer trigger) function executed at: {DateTime.Now}");
+                log.LogInformation($"{ec.FunctionName} (timer trigger) function executed at: {DateTime.UtcNow}");
                 var worker = new SlotMonitorWorker(_config, _monitoringContext, _storageConnectionString, _mailPassword);
                 await worker.Run(log, ec.FunctionName);
                 return;

@@ -39,7 +39,7 @@ namespace slotmonitor_func
         {
             DateTime lastSlotPreviously = await GetPreviousSlotDate();
             DateTime lastSlotCurrently = DateTime.MaxValue;
-            log.LogInformation($"Slot Monitor Worker function was called by {triggerFunction} at: {DateTime.Now}");
+            log.LogInformation($"Slot Monitor Worker function was called by {triggerFunction} at: {DateTime.UtcNow}");
 
             string body = await CheckForSlots();
             var slots = ParseSlots(body);
@@ -144,8 +144,8 @@ namespace slotmonitor_func
                 var reqbodyBlob = inboundContainer.GetBlockBlobReference(_monitoringContext.RequestBodyFileName);
                 reqbodyBlobContents = await reqbodyBlob.DownloadTextAsync();
                 var jsonBody = JObject.Parse(reqbodyBlobContents);
-                jsonBody["data"]["start_date"] = DateTime.Now.ToString("o");
-                jsonBody["data"]["end_date"] = DateTime.Now.AddDays(15).ToString("o");
+                jsonBody["data"]["start_date"] = DateTime.UtcNow.ToString("o");
+                jsonBody["data"]["end_date"] = DateTime.UtcNow.AddDays(15).ToString("o");
                 reqbodyBlobContents = jsonBody.ToString();
             }
             catch (Exception e)
@@ -282,7 +282,7 @@ namespace slotmonitor_func
             if (slotsAvailable)
             {
                 message.Subject = "ASDA Slots: There are free slots available at ASDA Groceries!";
-                string body = $"There are free slots as of {DateTime.Now.ToShortDateString()} at {DateTime.Now.ToShortTimeString()}:\n";
+                string body = $"There are free slots as of {DateTime.UtcNow.ToShortDateString()} at {DateTime.UtcNow.ToShortTimeString()}:\n";
                 foreach (var slot in freeSlots)
                 {
                     body += $"{slot.StartDateTime.ToLongDateString()}\n";
@@ -296,7 +296,7 @@ namespace slotmonitor_func
             else
             {
                 message.Subject = "ASDA Slots: None Available :-(";
-                string body = $"There are no free slots as of {DateTime.Now.ToShortDateString()} at {DateTime.Now.ToShortTimeString()}";
+                string body = $"There are no free slots as of {DateTime.UtcNow.ToShortDateString()} at {DateTime.UtcNow.ToShortTimeString()}";
                 message.Body = new TextPart("plain")
                 {
                     Text = $"{body}"
@@ -322,7 +322,7 @@ namespace slotmonitor_func
             message.Subject = $"Slots have been released up to {currentLastSlotDate.ToShortDateString()}";
             string body = $"See separate notifications to detemine if any of these slots are free.  The last date for which slots had previously been published was {previousLastSlotDate.ToShortDateString()} at {previousLastSlotDate.ToShortTimeString()}:\n";
             body += $"This date has been extended to {currentLastSlotDate.ToShortDateString()} at {currentLastSlotDate.ToShortTimeString()}";
-            body += $"/n/nThis change was detected at {DateTime.Now.ToShortTimeString()}";
+            body += $"/n/nThis change was detected at {DateTime.UtcNow.ToShortTimeString()}";
             message.Body = new TextPart("plain")
             {
                 Text = $"{body}"
@@ -354,7 +354,7 @@ namespace slotmonitor_func
                 {
                     ;
                 }
-                await historyBlob.AppendTextAsync($"Date={DateTime.Now.ToLongDateString()}, Time={DateTime.Now.ToLongTimeString()}, Date of Latest Slot={latestSlotDate.ToString("o")}");
+                await historyBlob.AppendTextAsync($"Date={DateTime.UtcNow.ToLongDateString()}, Time={DateTime.UtcNow.ToLongTimeString()}, Date of Latest Slot={latestSlotDate.ToString("o")}");
             }
             catch (Exception e)
             {
