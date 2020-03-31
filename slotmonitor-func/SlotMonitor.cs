@@ -90,7 +90,7 @@ namespace slotmonitor_func
 
             try
             {
-                //
+                
                 var storageAccount = CloudStorageAccount.Parse(_storageConnectionString);
                 blobClient = storageAccount.CreateCloudBlobClient();
                 inboundContainer = blobClient.GetContainerReference(_monitoringContext.MonitoringContainerName);
