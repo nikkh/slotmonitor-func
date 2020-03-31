@@ -28,8 +28,7 @@ namespace slotmonitor_func
         private readonly string _storageConnectionString;
         private readonly string _mailPassword;
 
-        const string FUNCTION_NAME = "[SlotMonitor]";
-
+       
         public SlotMonitor(IConfiguration config, MonitoringContext monitoringContext)
         {
             _config = config;

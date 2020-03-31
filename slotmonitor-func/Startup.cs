@@ -24,6 +24,7 @@ namespace slotmonitor_func
             IConfiguration configuration = configBuilder.Build();
             builder.Services.AddSingleton(configuration);
             builder.Services.AddSingleton(configuration.GetSection("MonitoringContext").Get<MonitoringContext>());
+            builder.Services.AddSingleton(configuration.GetSection("ZodiacContext").Get<ZodiacContext>());
 
         }
     }

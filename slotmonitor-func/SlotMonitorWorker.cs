@@ -39,7 +39,7 @@ namespace slotmonitor_func
         {
             DateTime lastSlotPreviously = await GetPreviousSlotDate();
             DateTime lastSlotCurrently = DateTime.MaxValue;
-            log.LogInformation($"Slot Monitor Worker function was called by {triggerFunction} at: {DateTime.UtcNow}");
+            log.LogInformation($"Slot Monitor Worker function was invoked by {triggerFunction} at: {DateTime.UtcNow}");
 
             string body = await CheckForSlots();
             var slots = ParseSlots(body);
@@ -296,7 +296,7 @@ namespace slotmonitor_func
             else
             {
                 message.Subject = "ASDA Slots: None Available :-(";
-                string body = $"There are no free slots as of {DateTime.UtcNow.ToShortDateString()} at {DateTime.UtcNow.ToShortTimeString()}";
+                string body = $"There are no free slots as of {DateTime.UtcNow.ToShortDateString()} at {DateTime.UtcNow.ToShortTimeString()}\r\n";
                 message.Body = new TextPart("plain")
                 {
                     Text = $"{body}"

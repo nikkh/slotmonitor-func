@@ -4,5 +4,9 @@
     "RequestHeaderFileName": "reqhdr.txt",
     "RequestBodyFileName": "reqbdy.json",
     "NotifyUnavailability": "false"
+  },
+  "ZodiacContext": {
+    "NumberOfCallsPerInvocation": 150,
+    "BaseUrl": "https://sirmione-web.azurewebsites.net/home/"
   }
 }
