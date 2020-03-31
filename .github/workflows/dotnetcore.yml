@@ -1,10 +1,11 @@
-name: Deploy Slot Monitor
-env:
-   APP_ALIAS: slotmonitor
 on:
   push:
     paths:
-    - slotmonitor-func/**
+    - global/**
+      - 
+name: Deploy Slot Monitor
+env:
+   APP_ALIAS: slotmonitor
       
 jobs:
   build-and-deploy:
