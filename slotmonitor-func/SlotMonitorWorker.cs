@@ -11,6 +11,7 @@ using slotmonitor_func.Contexts;
 using slotmonitor_func.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -26,20 +27,21 @@ namespace slotmonitor_func
         private readonly MonitoringContext _monitoringContext;
         private readonly string _storageConnectionString;
         private readonly string _mailPassword;
-
+        
         internal SlotMonitorWorker(IConfiguration config, MonitoringContext monitoringContext, string storageConnectionString, string mailPassword) 
         {
             _config = config;
             _monitoringContext = monitoringContext;
             _storageConnectionString = storageConnectionString;
             _mailPassword = mailPassword;
+            CultureInfo.CurrentCulture = new CultureInfo("en-GB");
         }
 
         internal async Task Run(ILogger log, string triggerFunction) 
         {
             DateTime lastSlotPreviously = await GetPreviousSlotDate();
             DateTime lastSlotCurrently = DateTime.MaxValue;
-            log.LogInformation($"Slot Monitor Worker function was invoked by {triggerFunction} at: {DateTime.UtcNow}");
+            log.LogInformation($"Slot Monitor Worker function was invoked by {triggerFunction} at: {DateTime.UtcNow.ToLocalTime()}");
 
             string body = await CheckForSlots();
             var slots = ParseSlots(body);
@@ -52,7 +54,7 @@ namespace slotmonitor_func
                 log.LogInformation($"{freeSlots.Count()} available");
                 foreach (var item in freeSlots)
                 {
-                    log.LogDebug($"FREE SLOT: {item.StartDateTime.ToShortDateString()} at {item.StartDateTime.ToShortDateString()}");
+                    log.LogDebug($"SLOT: (status={item.Status}) {item.StartDateTime.ToString("f")}");
                 }
                 await Notify(freeSlots);
 
@@ -282,10 +284,10 @@ namespace slotmonitor_func
             if (slotsAvailable)
             {
                 message.Subject = "ASDA Slots: There are free slots available at ASDA Groceries!";
-                string body = $"There are free slots as of {DateTime.UtcNow.ToShortDateString()} at {DateTime.UtcNow.ToShortTimeString()}:\n";
+                string body = $"There are free slots as of {DateTime.UtcNow.ToLocalTime().ToString("F")}:{Environment.NewLine}";
                 foreach (var slot in freeSlots)
                 {
-                    body += $"{slot.StartDateTime.ToLongDateString()}\n";
+                    body += $"{slot.StartDateTime.ToString("F")}, Status = {slot.Status}{Environment.NewLine}";
                 }
 
                 message.Body = new TextPart("plain")
@@ -296,7 +298,7 @@ namespace slotmonitor_func
             else
             {
                 message.Subject = "ASDA Slots: None Available :-(";
-                string body = $"There are no free slots as of {DateTime.UtcNow.ToShortDateString()} at {DateTime.UtcNow.ToShortTimeString()}\r\n";
+                string body = $"There are no free slots as of {DateTime.UtcNow.ToLocalTime().ToShortDateString()} at {DateTime.UtcNow.ToLocalTime().ToShortTimeString()}{Environment.NewLine}";
                 message.Body = new TextPart("plain")
                 {
                     Text = $"{body}"
@@ -320,9 +322,8 @@ namespace slotmonitor_func
             message.To.Add(new MailboxAddress("Nick Hill", "nhill@microsoft.com"));
             message.To.Add(new MailboxAddress("Nikki Chatwin", "nikki.chatwin@hotmail.co.uk"));
             message.Subject = $"Slots have been released up to {currentLastSlotDate.ToShortDateString()}";
-            string body = $"See separate notifications to detemine if any of these slots are free.  The last date for which slots had previously been published was {previousLastSlotDate.ToShortDateString()} at {previousLastSlotDate.ToShortTimeString()}:\n";
-            body += $"This date has been extended to {currentLastSlotDate.ToShortDateString()} at {currentLastSlotDate.ToShortTimeString()}";
-            body += $"/n/nThis change was detected at {DateTime.UtcNow.ToShortTimeString()}";
+            string body = $"The horizon for which slots have been published has been extended to {currentLastSlotDate.ToString("F")}{Environment.NewLine}";
+            body += $"This change was detected at {DateTime.UtcNow.ToLocalTime().ToShortTimeString()}";
             message.Body = new TextPart("plain")
             {
                 Text = $"{body}"
@@ -354,7 +355,7 @@ namespace slotmonitor_func
                 {
                     ;
                 }
-                await historyBlob.AppendTextAsync($"Date={DateTime.UtcNow.ToLongDateString()}, Time={DateTime.UtcNow.ToLongTimeString()}, Date of Latest Slot={latestSlotDate.ToString("o")}");
+                await historyBlob.AppendTextAsync($"Date={DateTime.UtcNow.ToLongDateString()}, Time={DateTime.UtcNow.ToLongTimeString()}, Date of Latest Slot={latestSlotDate.ToString("o")}{Environment.NewLine}");
             }
             catch (Exception e)
             {

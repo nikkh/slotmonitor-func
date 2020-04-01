@@ -19,7 +19,7 @@ namespace slotmonitor_func
         }
 
         [FunctionName("ZodiacGenerator")]
-        public async Task Run([TimerTrigger("0 0 18-23 * * *")]TimerInfo myTimer, ILogger log, ExecutionContext ec)
+        public async Task Run([TimerTrigger("0 0 04-06 * * *")]TimerInfo myTimer, ILogger log, ExecutionContext ec)
         {
             try
             {
