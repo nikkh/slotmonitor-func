@@ -11,19 +11,21 @@ namespace slotmonitor_func
     internal class ZodiacWorker
     {
         private readonly ZodiacContext _zodiacContext;
-
+        
         internal ZodiacWorker(ZodiacContext zodiacContext)
         {
+            
             _zodiacContext = zodiacContext;
         }
-        internal async Task Run(ILogger log, string triggerFunction)
+        internal async Task<int> Run(ILogger log, string triggerFunction, int calls = 0)
         {
-            Random random = new Random();
-            int randomNumber = random.Next(0, 1000);
-            int maxCalls = _zodiacContext.NumberOfCallsPerInvocation;
-            int calls = maxCalls > randomNumber ? randomNumber : maxCalls;
-            log.LogInformation($"Zodiac Worker function was invoked by {triggerFunction} at: {DateTime.UtcNow}");
-            string[] pageMaster = { "aries", "cancer", "taurus", "gemini", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "pisces", "aquarius" };
+            Random random = new Random(); 
+            if (calls == 0)
+            {
+                calls = random.Next(1, _zodiacContext.NumberOfCallsPerInvocation);
+            }
+            
+            string[] pageMaster = { "aries", "cancer", "taurus", "gemini", "leo", "virgo", "libra", "scorpio", "sagittarius", "pisces", "aquarius" };
             log.LogInformation($"About to generate {calls} calls.");
             List<string> pages = new List<string>();
             for (int i = 0; i < calls; i++)
@@ -48,7 +50,7 @@ namespace slotmonitor_func
                 if (j % 25 == 0) log.LogDebug($"{j} calls have been made");
             }
             log.LogInformation($"Done. {j} calls were made in total.");
-            return;
+            return calls;
         }
         private static bool shouldMaxCPU()
         {
