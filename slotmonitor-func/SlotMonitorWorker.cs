@@ -61,8 +61,6 @@ namespace slotmonitor_func
             }
             else
             {
-
-
                 var firstSlot = slots.OrderBy(s => s.StartDateTime).FirstOrDefault();
                 var lastSlot = slots.OrderByDescending(s => s.StartDateTime).First();
                 log.LogInformation($"There are no free slots in the period {firstSlot.StartDateTime.ToShortDateString()} to {lastSlot.EndDateTime.ToShortDateString()}");
@@ -283,7 +281,7 @@ namespace slotmonitor_func
 
             if (slotsAvailable)
             {
-                message.Subject = "ASDA Slots: There are free slots available at ASDA Groceries!";
+                message.Subject = $"ASDA Slots: Earliest: {freeSlots.OrderBy(s => s.StartDateTime).FirstOrDefault().StartDateTime}, Latest {freeSlots.OrderByDescending(s => s.StartDateTime).FirstOrDefault().StartDateTime}";
                 string body = $"There are free slots as of {DateTime.UtcNow.ToLocalTime().ToString("F")}:{Environment.NewLine}";
                 foreach (var slot in freeSlots)
                 {
