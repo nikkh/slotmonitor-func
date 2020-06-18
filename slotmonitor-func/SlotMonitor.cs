@@ -38,7 +38,7 @@ namespace slotmonitor_func
         }
 
         [FunctionName("SlotMonitor")]
-        public async Task Run([TimerTrigger("0 */30 * * * *")]TimerInfo myTimer, ILogger log, ExecutionContext ec)
+        public async Task Run([TimerTrigger("0 */5 21-23 * * FRI,SAT")]TimerInfo myTimer, ILogger log, ExecutionContext ec)
         {
             try
             {
